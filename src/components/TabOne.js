@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import _ from "lodash";
+import Swal from "sweetalert2";
 
 //Components
 import AddList from "./tab-one/AddList";
 import Search from "./tab-one/Search";
 import Toggle from "./tab-one/Toggle";
-import { useForm } from "react-hook-form";
-import _ from "lodash";
+import TabList from "./TabList";
 
 function TabOne() {
   const { register, handleSubmit, errors } = useForm();
@@ -32,7 +34,6 @@ function TabOne() {
     },
   ]);
   const [searchList, setSearchList] = useState("");
-  const [message, setMessage] = useState({});
   const [toggle, setToggle] = useState(false);
 
   const toggleHandle = () => {
@@ -53,13 +54,21 @@ function TabOne() {
 
   const onSubmit = (data, e) => {
     if (_.find(elementList, { name: data.name })) {
-      setMessage({ message: "Element already exists", type: "error" });
+      Swal.fire({
+        title: "Error",
+        text: "Element already exists",
+        icon: "error",
+      });
     } else {
       setElementList([
         ...elementList,
         { id: elementList.length + 1, name: data.name },
       ]);
-      setMessage({ message: "Element successfully added", type: "success" });
+      Swal.fire({
+        title: "Success",
+        text: "Element successfully added",
+        icon: "success",
+      });
     }
     e.target.reset();
   };
@@ -76,7 +85,6 @@ function TabOne() {
             register={register}
             handleSubmit={handleSubmit}
             onSubmit={onSubmit}
-            message={message}
           />
           <Search searchFilter={searchFilter} />
           <Toggle toggle={toggle} toggleHandle={toggleHandle} />
@@ -84,32 +92,11 @@ function TabOne() {
 
         {/* Show List */}
         <div>
-          {filteredList.map((el, index) => {
-            if (toggle) {
-              if (el.id % 2 === 0) {
-                return null;
-              }
-            }
-            return (
-              <div className="my-6 border-2 border-black" key={index}>
-                <div className="flex items-center justify-between p-5">
-                  <div className="text-2xl">
-                    <p>
-                      {el.id}. {el.name}
-                    </p>
-                  </div>
-                  <div className="px-1 duration-150 ease-in transform border-2 border-black rounded-full hover:border-red-400 hover:bg-red-400 hover:text-white">
-                    <button
-                      onClick={() => deleteList(el.id)}
-                      className="p-2 focus:outline-none"
-                    >
-                      <i className="fa fa-times fa-2x" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <TabList
+            toggle={toggle}
+            filteredList={filteredList}
+            deleteList={deleteList}
+          />
         </div>
       </div>
     </>
